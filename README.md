@@ -154,9 +154,6 @@ Backlight, Shipping Init. Всё, что делает приложение, об
   [Телевизоры на шасси CV9632xx / CVTE](https://4pda.to/forum/index.php?showtopic=1058309)
 - [cleanyourtv / CleanMyTV](https://github.com/wingedpanther/cleanmytv) — debloat-списки
   и идея работы с лаунчером через ADB
-- [FLauncher](https://github.com/osrosal/flauncher),
-  [Projectivy Launcher](https://github.com/spocky/miproja1) — альтернативные лаунчеры
-- [TV Bro](https://github.com/truefedex/tv-bro) — браузер для Android TV
 
 ## Лицензия
 
