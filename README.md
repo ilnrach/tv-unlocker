@@ -158,3 +158,9 @@ Backlight, Shipping Init. Всё, что делает приложение, об
 ## Лицензия
 
 [MIT](LICENSE)
+
+## Поддержать проект
+
+Если TV Unlocker помог разблокировать ваш телевизор — можно поддержать разработку:
+
+**[ЮMoney — перевести](https://yoomoney.ru/fundraise/1LNFQM9TLJ6.261122)**
