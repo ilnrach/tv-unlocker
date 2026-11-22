@@ -1,0 +1,17 @@
+# сборочные артефакты
+classes/
+dexout/
+*.apk
+!apk/*.apk
+*.keystore
+*.jks
+keystore/
+
+# локальные настройки
+local.properties
+android.jar
+
+# логи и временные файлы
+*.log
+ui*.xml
+received/

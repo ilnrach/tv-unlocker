@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ru.tvunlocker"
+    android:versionCode="22"
+    android:versionName="4.3">
+
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28"/>
+
+    <!-- Разрешает приложению видеть список всех пакетов на Android 11 -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
+    <!-- Запись отчётов в Download и на съёмные тома (legacy storage, targetSdk 28) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- Отправка отчётов на ПК по сети (POST на IP из TVUnlocker.PC_PRIMARY) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-feature android:name="android.software.leanback" android:required="false"/>
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+
+    <application
+        android:label="TV Unlocker"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+        android:usesCleartextTraffic="true"
+        android:allowBackup="true">
+
+        <activity
+            android:name=".TVUnlocker"
+            android:exported="true"
+            android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".KeyActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"/>
+
+        <activity
+            android:name=".InfoActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"/>
+    </application>
+</manifest>
