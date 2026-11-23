@@ -55,6 +55,7 @@ public class TVUnlocker extends ListActivity {
     private static final int ACTION_DRILL = 11;
     private static final int ACTION_UNLOCK2 = 12;
     private static final int ACTION_TUNE = 13;
+    private static final int ACTION_EXPORT = 14;
 
     /** IP компьютера для приёма файлов. */
     private static final String PC_PRIMARY = "192.168.1.100"; // IP компьютера с запущенным приёмником, поменяйте на свой
@@ -113,7 +114,7 @@ public class TVUnlocker extends ListActivity {
         header.setTextColor(Color.WHITE);
         header.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         header.setPadding(28, 28, 28, 28);
-        header.setText("TV Unlocker v4.3\nСканирую приложения…");
+        header.setText("TV Unlocker v4.4\nСканирую приложения…");
 
         getListView().addHeaderView(header, null, false);
         getListView().setBackgroundColor(Color.rgb(14, 18, 26));
@@ -243,6 +244,8 @@ public class TVUnlocker extends ListActivity {
                         + vendorItems.size() + " шт."));
         displayItems.add(actionItem(ACTION_INFO, "[i] Инфо о платформе и состоянии ADB"));
         displayItems.add(actionItem(ACTION_REPORT, "[S] Сохранить отчёты (на флешку и в Download)"));
+        displayItems.add(actionItem(ACTION_EXPORT,
+                "[E] ЭКСПОРТ прошивки: системные APK и конфиги на флешку"));
         displayItems.add(actionItem(ACTION_PROBE,
                 "[P] ПРОБИВКА ADB (настройки/приёмники/сервисы/провайдеры)"));
         displayItems.add(actionItem(ACTION_SENDPC,
@@ -260,13 +263,13 @@ public class TVUnlocker extends ListActivity {
         displayItems.add(actionItem(ACTION_DRILL,
                 "[F] ФАБРИКА: обход всех под-API TV (Debug/Properties/AutoTest)"));
         displayItems.add(actionItem(ACTION_UNLOCK2,
-                "[G] РАБОЧАЯ РАЗБЛОЖИКА: ctl.start adbd через SystemProperties"));
+                "[G] РАБОЧАЯ РАЗБЛОКИРОВКА: ctl.start adbd через SystemProperties"));
         displayItems.add(actionItem(ACTION_TUNE,
                 "[T] ТЮНИНГ картинки и звука"));
         displayItems.addAll(serviceItems);
         adapter.notifyDataSetChanged();
         StringBuilder sb = new StringBuilder();
-        sb.append("TV Unlocker v4.3\n");
+        sb.append("TV Unlocker v4.4\n");
         sb.append("Модель: ").append(Build.MODEL).append("\n");
         sb.append("Сервисных активностей: ").append(serviceItems.size())
           .append(" (запускаемых: ").append(countExported(serviceItems)).append(")\n");
@@ -281,6 +284,8 @@ public class TVUnlocker extends ListActivity {
         displayItems.add(actionItem(ACTION_TOGGLE, "◄ Вернуться к сервисному списку"));
         displayItems.add(actionItem(ACTION_INFO, "[i] Инфо о платформе и состоянии ADB"));
         displayItems.add(actionItem(ACTION_REPORT, "[S] Сохранить отчёты (на флешку и в Download)"));
+        displayItems.add(actionItem(ACTION_EXPORT,
+                "[E] ЭКСПОРТ прошивки: системные APK и конфиги на флешку"));
         displayItems.add(actionItem(ACTION_PROBE,
                 "[P] ПРОБИВКА ADB (настройки/приёмники/сервисы/провайдеры)"));
         displayItems.add(actionItem(ACTION_SENDPC,
@@ -298,7 +303,7 @@ public class TVUnlocker extends ListActivity {
         displayItems.add(actionItem(ACTION_DRILL,
                 "[F] ФАБРИКА: обход всех под-API TV (Debug/Properties/AutoTest)"));
         displayItems.add(actionItem(ACTION_UNLOCK2,
-                "[G] РАБОЧАЯ РАЗБЛОЖИКА: ctl.start adbd через SystemProperties"));
+                "[G] РАБОЧАЯ РАЗБЛОКИРОВКА: ctl.start adbd через SystemProperties"));
         displayItems.addAll(vendorItems);
         adapter.notifyDataSetChanged();
         StringBuilder sb = new StringBuilder();
@@ -335,6 +340,10 @@ public class TVUnlocker extends ListActivity {
         }
         if (it.action == ACTION_PROBE) {
             runProbe();
+            return;
+        }
+        if (it.action == ACTION_EXPORT) {
+            runExport();
             return;
         }
         if (it.action == ACTION_SENDPC) {
@@ -426,6 +435,12 @@ public class TVUnlocker extends ListActivity {
                 } else if (goldAfterGrant) {
                     goldAfterGrant = false;
                     doGold();
+                } else if (tuneAfterGrant) {
+                    tuneAfterGrant = false;
+                    doTune();
+                } else if (exportAfterGrant) {
+                    exportAfterGrant = false;
+                    doExport();
                 } else {
                     writeReport();
                 }
@@ -435,6 +450,78 @@ public class TVUnlocker extends ListActivity {
                         Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    // ==================== Экспорт прошивки ====================
+
+    private boolean exportAfterGrant = false;
+
+    private void runExport() {
+        if (needWritePerm()) {
+            askWritePerm();
+            exportAfterGrant = true;
+            return;
+        }
+        doExport();
+    }
+
+    private void doExport() {
+        Toast.makeText(this, "Выгружаю APK и конфиги прошивки, это несколько минут",
+                Toast.LENGTH_LONG).show();
+        header.setText("TV Unlocker v4.4\nИдёт экспорт прошивки…");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                StringBuilder where = new StringBuilder();
+                File base = exportBase(where);
+                String result;
+                try {
+                    result = Export.run(base, where.toString(), TVUnlocker.this,
+                            new Export.Progress() {
+                                @Override
+                                public void update(final String line) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            header.setText("TV Unlocker v4.4\nЭкспорт… " + line);
+                                        }
+                                    });
+                                }
+                            });
+                } catch (Throwable t) {
+                    result = "ОШИБКА экспорта: " + t;
+                }
+                final String msg = result;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (showVendor) showVendor();
+                        else showService();
+                        Toast.makeText(TVUnlocker.this, msg, Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        }).start();
+    }
+
+    /** Куда выгружать: первая доступная флешка, иначе внутренний Download. */
+    private File exportBase(StringBuilder where) {
+        for (File v : removableVolumes()) {
+            File base = new File(v, "TVUnlocker/export");
+            try {
+                if (!base.exists() && !base.mkdirs()) continue;
+                File probe = new File(base, ".probe");
+                if (!probe.createNewFile()) continue;
+                probe.delete();
+                if (base.getUsableSpace() < 300L * 1024 * 1024) continue;
+                where.append("флешка ").append(v.getName());
+                return base;
+            } catch (Throwable ignored) {
+            }
+        }
+        where.append("внутренняя память Download (флешка не найдена)");
+        return new File(Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "TVUnlocker/export");
     }
 
     // ==================== Отчёт ====================
@@ -556,7 +643,7 @@ public class TVUnlocker extends ListActivity {
         }).start();
     }
 
-    // ==================== РАБОЧАЯ РАЗБЛОЖИКА (SystemProperties + KeyEvents) ====================
+    // ==================== РАБОЧАЯ РАЗБЛОКИРОВКА (SystemProperties + KeyEvents) ====================
 
     private boolean goldAfterGrant = false;
 
@@ -586,7 +673,7 @@ public class TVUnlocker extends ListActivity {
                 final boolean unlocked = log.contains("РАЗБЛОКИРОВАНО");
                 final String msg = (unlocked
                         ? ">>> РАЗБЛОКИРОВАНО! Выполните на компьютере: adb connect <IP>:5555\n"
-                        : "Рабочая разблокировка выполнен — протокол:\n")
+                        : "Рабочая разблокировка выполнена — протокол:\n")
                         + paths + "\nНа ПК: " + up;
                 runOnUiThread(new Runnable() {
                     @Override
@@ -893,30 +980,8 @@ public class TVUnlocker extends ListActivity {
 
     // ==================== Запись на все носители ====================
 
-    /** Пишет файл в Download, на все съёмные тома (флешки) и в папку приложения. */
-    private void writeEverywhere(String name, String content, StringBuilder paths) {
-        byte[] data;
-        try {
-            data = content.getBytes("UTF-8");
-        } catch (Throwable t) {
-            data = new byte[0];
-        }
-
-        // 1. Основной Download (внутренняя память)
-        try {
-            File dir = Environment
-                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            if (!dir.exists()) dir.mkdirs();
-            File f = new File(dir, name);
-            FileOutputStream fo = new FileOutputStream(f);
-            fo.write(data);
-            fo.close();
-            paths.append("Внутр. Download: ").append(f.getAbsolutePath()).append("\n");
-        } catch (Throwable t) {
-            paths.append("Внутр. Download: ошибка ").append(t.getMessage()).append("\n");
-        }
-
-        // 2. Съёмные тома: StorageManager (API 30+) + скан /storage
+    /** Съёмные тома (флешки): StorageManager на API 30+ и скан /storage. */
+    private ArrayList<File> removableVolumes() {
         ArrayList<File> vols = new ArrayList<File>();
         try {
             if (Build.VERSION.SDK_INT >= 30) {
@@ -943,8 +1008,34 @@ public class TVUnlocker extends ListActivity {
             }
         } catch (Throwable ignored) {
         }
+        return vols;
+    }
 
-        for (File v : vols) {
+    /** Пишет файл в Download, на все съёмные тома (флешки) и в папку приложения. */
+    private void writeEverywhere(String name, String content, StringBuilder paths) {
+        byte[] data;
+        try {
+            data = content.getBytes("UTF-8");
+        } catch (Throwable t) {
+            data = new byte[0];
+        }
+
+        // 1. Основной Download (внутренняя память)
+        try {
+            File dir = Environment
+                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if (!dir.exists()) dir.mkdirs();
+            File f = new File(dir, name);
+            FileOutputStream fo = new FileOutputStream(f);
+            fo.write(data);
+            fo.close();
+            paths.append("Внутр. Download: ").append(f.getAbsolutePath()).append("\n");
+        } catch (Throwable t) {
+            paths.append("Внутр. Download: ошибка ").append(t.getMessage()).append("\n");
+        }
+
+        // 2. Съёмные тома (флешки)
+        for (File v : removableVolumes()) {
             try {
                 File dir = new File(v, "TVUnlocker");
                 if (!dir.exists()) dir.mkdirs();
@@ -975,7 +1066,7 @@ public class TVUnlocker extends ListActivity {
 
     private String buildReportContent() {
         StringBuilder sb = new StringBuilder();
-        sb.append("TV Unlocker v4.3 report\n");
+        sb.append("TV Unlocker v4.4 report\n");
         sb.append("Дата: ").append(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                 .format(new java.util.Date())).append("\n");
         sb.append("Модель: ").append(Build.MODEL).append("\n");

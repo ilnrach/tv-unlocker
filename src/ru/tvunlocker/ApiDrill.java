@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * v4.0: подключение к ITvApiManager (bind по action TV_API_SERVICE,
  * интерфейс из /system/framework/cvte.media.jar) и ДВА режима:
  * run() — обход всех getTVApi* под-API с полным логом методов;
- * gold() — РАБОЧАЯ РАЗБЛОЖИКА: SystemProperties.set (ctl.start adbd,
+ * gold() — РАБОЧАЯ РАЗБЛОКИРОВКА: SystemProperties.set (ctl.start adbd,
  * service.adb.tcp.port) + SystemDebug ключи/переключатели.
  */
 public class ApiDrill {
@@ -429,7 +429,7 @@ public class ApiDrill {
         }
     }
 
-    // ==================== РАБОЧАЯ РАЗБЛОЖИКА v4.0 ====================
+    // ==================== РАБОЧАЯ РАЗБЛОКИРОВКА v4.0 ====================
 
     private static final String[][] UNLOCK_PROP_SEQ = {
             {"service.adb.tcp.port", "5555"},
@@ -446,7 +446,7 @@ public class ApiDrill {
             {8, 8, 11, 14}
     };
 
-    /** РАБОЧАЯ РАЗБЛОЖИКА: проперти от system + инжекция кода int-клавишами. */
+    /** РАБОЧАЯ РАЗБЛОКИРОВКА: проперти от system + инжекция кода int-клавишами. */
     public static String gold(Context ctx) {
         StringBuilder sb = new StringBuilder();
         sb.append("TV Unlocker v4.3 WORKING UNLOCK\n");
@@ -514,7 +514,7 @@ public class ApiDrill {
             }
 
             if (props != null) {
-                sb.append("\n== РАБОЧАЯ РАЗБЛОЖИКА: свойства + рестарт adbd ==\n");
+                sb.append("\n== РАБОЧАЯ РАЗБЛОКИРОВКА: свойства + рестарт adbd ==\n");
                 for (String[] s : UNLOCK_PROP_SEQ) {
                     try {
                         boolean r = propSet(props, s[0], s[1]);

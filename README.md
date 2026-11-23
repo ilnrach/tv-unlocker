@@ -53,7 +53,7 @@ adb install TV-Unlocker-4.3.apk
 | `[K] ЗАВОДСКИЕ КЛАВИШИ` | инжекция клавиш через заводской сервис (цифры для сервисных кодов пульта) |
 | `[F] ФАБРИКА` | обход всех под-API платформы (`ITvApiManager` и ~150 дочерних интерфейсов) |
 | `[V] TV API` | прямое подключение к `ITvApiManager` с дампом методов |
-| `[G] РАБОЧАЯ РАЗБЛОЖИКА` | главное: `SystemProperties.set` от system-uid — `service.adb.tcp.port=5555`, `ctl.start adbd` |
+| `[G] РАБОЧАЯ РАЗБЛОКИРОВКА` | главное: `SystemProperties.set` от system-uid — `service.adb.tcp.port=5555`, `ctl.start adbd` |
 | `[T] ТЮНИНГ` | настройка картинки и звука: шумодавы и «улучшайзеры» off, режим STANDARD, AVL on |
 
 Все действия протоколируются в `tvunlocker_*.txt` (Download на ТВ, папка `TVUnlocker`
